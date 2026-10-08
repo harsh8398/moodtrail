@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-The model downloads on your first tap (about 1 GB, cached after that). Swap it by changing `MODEL_ID` in `src/llm.ts` to any id from WebLLM's prebuilt list.
+The model downloads on your first tap (about 880 MB, cached after that). Swap it by changing `MODEL_ID` in `src/llm.ts` to any id from WebLLM's prebuilt list.
 
 ## Files
 
