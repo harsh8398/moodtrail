@@ -1,0 +1,9 @@
+{
+  "name": "MoodTrail",
+  "short_name": "MoodTrail",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ea",
+  "theme_color": "#2f5d3a",
+  "icons": []
+}

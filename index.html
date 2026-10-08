@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2f5d3a" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <title>MoodTrail</title>
+    <style>
+      :root {
+        --bg: #f4f1e8; --fg: #1d271d; --card: #fff; --line: #e3dfd0;
+        --accent: #2f5d3a; --accent-fg: #fff; --soft: #e6efe3; --muted: #667060;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121710; --fg: #e8ecdf; --card: #1b2217; --line: #2b3426;
+          --accent: #8cc896; --accent-fg: #10200f; --soft: #243020; --muted: #97a28e;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 16px/1.45 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+      main { max-width: 640px; margin: 0 auto; padding: 20px 16px 56px; }
+
+      header { margin-bottom: 18px; }
+      h1 { margin: 0; font-size: 1.6rem; letter-spacing: -0.02em; }
+      h2 { margin: 0 0 12px; font-size: 1rem; }
+      .sub { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+      .guide { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; padding: 5px 12px; border-radius: 999px; background: var(--soft); font-size: 0.8rem; color: var(--accent); }
+      .guide .bar { width: 64px; height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+      .guide .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.4s; }
+
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+      .people { display: grid; gap: 14px; margin-bottom: 14px; }
+      @media (min-width: 640px) { .people { grid-template-columns: 1fr 1fr; } }
+      .people .card { margin: 0; }
+
+      .field { margin-bottom: 12px; }
+      .field:last-child { margin-bottom: 0; }
+      .field label { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+      .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .seg button { font: inherit; font-size: 0.9rem; padding: 9px 4px; border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+      .seg button:last-child { border-right: 0; }
+      .seg button.on { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+
+      textarea { width: 100%; font: inherit; border-radius: 10px; padding: 10px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); resize: vertical; }
+      .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 8px; }
+
+      .go { margin-top: 0; width: 100%; font: inherit; font-weight: 600; padding: 15px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-fg); cursor: pointer; margin: 4px 0 18px; }
+      .go:disabled { opacity: 0.6; cursor: default; }
+
+      .status { display: flex; align-items: center; gap: 10px; color: var(--muted); padding: 4px 2px 16px; }
+      .status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+      @media (prefers-reduced-motion: reduce) { .status .dot { animation: none; } }
+
+      .results h2 { margin: 8px 2px 10px; }
+      .pick { display: grid; grid-template-columns: 32px 1fr; gap: 12px; }
+      .pick .num { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+      .pick h3 { margin: 0; font-size: 1.05rem; }
+      .tags { display: flex; gap: 6px; margin: 4px 0 8px; flex-wrap: wrap; }
+      .tags span { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--accent); }
+      .pick p { margin: 0 0 4px; }
+      .pick small { color: var(--muted); display: block; }
+      .pick a { display: inline-block; margin-top: 10px; color: var(--accent); font-weight: 600; text-decoration: none; }
+      .pick .note { color: var(--fg); font-style: italic; min-height: 1.2em; }
+      .pick .note:empty { display: none; }
+      .movie { background: var(--soft); border-color: transparent; }
+      .movie strong { display: block; font-size: 1.1rem; margin-top: 2px; }
+      details.card summary { cursor: pointer; font-weight: 600; }
+      details.card[open] summary { margin-bottom: 8px; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>MoodTrail</h1>
+          <p class="sub">Tap your moods. Get a place. Put the phone away.</p>
+        </div>
+        <div id="guide" class="guide idle"></div>
+      </header>
+
+      <section class="people" id="people"></section>
+
+      <details class="card" id="movie">
+        <summary>Movie night (optional)</summary>
+        <p class="hint">Add a few titles you'd both watch, one per line. After your outing we'll pick one so you skip the scrolling.</p>
+        <textarea id="watchlist" rows="3" placeholder="Severance&#10;Spirited Away&#10;Our Planet"></textarea>
+      </details>
+
+      <button id="go" class="go">Where should we go?</button>
+      <div id="status" class="status" hidden></div>
+      <section id="results" class="results"></section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
