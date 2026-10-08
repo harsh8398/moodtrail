@@ -1,8 +1,9 @@
 // Makes a second visit work with no signal.
 // - The page and its scripts are saved on install.
 // - The page itself is network-first, so a new deploy is picked up when you are online.
-// - Everything else (hashed scripts, model weights from Hugging Face) is cache-first.
-const CACHE = "moodtrail-v2";
+// - Other files from this site (hashed scripts) are cache-first.
+// The model weights are not cached here: WebLLM keeps its own copy, and a second one would double the storage.
+const CACHE = "moodtrail-v3";
 
 async function precache() {
   const cache = await caches.open(CACHE);
@@ -28,10 +29,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  const cacheable =
-    request.method === "GET" &&
-    (url.origin === self.location.origin || url.hostname.endsWith("huggingface.co") || url.hostname.endsWith("githubusercontent.com"));
-  if (!cacheable) return;
+  if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
